@@ -1,0 +1,28 @@
+﻿@model List<MedCore.Models.Bill>
+
+<h2>Bills</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Generate Bill</a>
+
+<table class="table table-striped">
+    <thead><tr><th>Patient</th><th>Amount</th><th>Status</th><th>Generated</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var b in Model)
+        {
+            <tr>
+                <td>@b.Appointment?.Patient?.FullName</td>
+                <td>@b.Amount.ToString("C")</td>
+                <td>@b.Status</td>
+                <td>@b.GeneratedOn.ToShortDateString()</td>
+                <td>
+                    @if (b.Status == MedCore.Models.PaymentStatus.Unpaid)
+                    {
+                        <form asp-action="MarkPaid" asp-route-id="@b.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Mark Paid</button>
+                        </form>
+                    }
+                    <a asp-action="Delete" asp-route-id="@b.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

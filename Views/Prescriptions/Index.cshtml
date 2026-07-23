@@ -1,0 +1,20 @@
+﻿@model List<MedCore.Models.Prescription>
+
+<h2>Prescriptions</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Prescription</a>
+
+<table class="table table-striped">
+    <thead><tr><th>Patient</th><th>Doctor</th><th>Medicines</th><th>Issued</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Appointment?.Patient?.FullName</td>
+                <td>@p.Appointment?.Doctor?.FullName</td>
+                <td>@p.Medicines</td>
+                <td>@p.IssuedOn.ToShortDateString()</td>
+                <td><a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Delete</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

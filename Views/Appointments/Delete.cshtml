@@ -1,0 +1,9 @@
+﻿@model MedCore.Models.Appointment
+
+<h2>Delete Appointment</h2>
+<p>Delete appointment for <strong>@Model.Patient?.FullName</strong> with <strong>@Model.Doctor?.FullName</strong>?</p>
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

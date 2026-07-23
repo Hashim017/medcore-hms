@@ -1,0 +1,23 @@
+﻿@model List<MedCore.Models.Appointment>
+
+<h2>Appointments</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Book Appointment</a>
+
+<table class="table table-striped">
+    <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.Patient?.FullName</td>
+                <td>@a.Doctor?.FullName</td>
+                <td>@a.AppointmentDate.ToString("g")</td>
+                <td>@a.Status</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@a.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,28 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# EF Core
+*.mdf
+*.ldf
+
+# Rider / VS Code (in case you switch later)
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit these)
+appsettings.Development.json
