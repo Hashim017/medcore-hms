@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MedCore.Data;
+using MedCore.Models;
+using MedCore.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MedCore.Data;
-using MedCore.Models;
-using MedCore.ViewModels;
 
 namespace MedCore.Controllers
 {
@@ -12,7 +13,13 @@ namespace MedCore.Controllers
     public class AppointmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public AppointmentsController(ApplicationDbContext context) => _context = context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AppointmentsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
 
         private async Task LoadDropdowns(int? patientId = null, int? doctorId = null)
         {
@@ -20,16 +27,36 @@ namespace MedCore.Controllers
             ViewBag.Doctors = new SelectList(await _context.Doctors.ToListAsync(), "Id", "FullName", doctorId);
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
-            var appointments = await _context.Appointments
+            int pageSize = 10;
+
+            var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                 .OrderByDescending(a => a.AppointmentDate)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (User.IsInRole("Doctor"))
+            {
+                var userId = _userManager.GetUserId(User);
+                query = query.Where(a => a.Doctor!.ApplicationUserId == userId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(a => a.Patient!.FullName.Contains(search) || a.Doctor!.FullName.Contains(search));
+
+            int totalCount = await query.CountAsync();
+            var appointments = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            ViewData["Search"] = search;
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return View(appointments);
         }
 
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create()
         {
             await LoadDropdowns();
@@ -37,6 +64,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create(AppointmentViewModel model)
         {
             if (!ModelState.IsValid)
@@ -69,7 +97,7 @@ namespace MedCore.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id)
         {
             var appt = await _context.Appointments.FindAsync(id);
@@ -88,6 +116,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id, AppointmentViewModel model)
         {
             if (id != model.Id) return BadRequest();
@@ -110,6 +139,7 @@ namespace MedCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var appt = await _context.Appointments
@@ -120,6 +150,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var appt = await _context.Appointments.FindAsync(id);
@@ -129,6 +160,27 @@ namespace MedCore.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var appt = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.Prescription)
+                .Include(a => a.Bill)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appt == null) return NotFound();
+
+            // Doctor can only view their own appointment details
+            if (User.IsInRole("Doctor"))
+            {
+                var userId = _userManager.GetUserId(User);
+                if (appt.Doctor?.ApplicationUserId != userId) return Forbid();
+            }
+
+            return View(appt);
         }
     }
 }

@@ -18,5 +18,9 @@ namespace MedCore.ViewModels
 
         [Required]
         public string Role { get; set; } = string.Empty;
+        // Only required when Role == "Doctor"
+        public string? Specialization { get; set; }
+        public int? DepartmentId { get; set; }
+        public string? PhoneNumber { get; set; }
     }
 }

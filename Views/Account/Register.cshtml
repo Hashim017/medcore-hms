@@ -27,12 +27,43 @@
 
     <div class="mb-3">
         <label>Role</label>
-        <select asp-for="Role" class="form-control">
+        <select asp-for="Role" id="roleSelect" class="form-control">
+            <option value="">-- Select --</option>
             <option value="Admin">Admin</option>
             <option value="Doctor">Doctor</option>
             <option value="Receptionist">Receptionist</option>
         </select>
     </div>
 
+    <div id="doctorFields" style="display:none;">
+        <div class="mb-3">
+            <label>Specialization</label>
+            <input asp-for="Specialization" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Department</label>
+            <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-control">
+                <option value="">-- Select --</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Phone</label>
+            <input asp-for="PhoneNumber" class="form-control" />
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary">Register</button>
 </form>
+@section Scripts {
+    <script>
+        const roleSelect = document.getElementById('roleSelect');
+        const doctorFields = document.getElementById('doctorFields');
+
+        function toggleDoctorFields() {
+            doctorFields.style.display = roleSelect.value === 'Doctor' ? 'block' : 'none';
+        }
+
+        roleSelect.addEventListener('change', toggleDoctorFields);
+        toggleDoctorFields(); // run once on page load too, in case of validation re-render with Doctor already selected
+    </script>
+}

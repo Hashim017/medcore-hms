@@ -1,8 +1,14 @@
 ﻿@model List<MedCore.Models.Prescription>
 
 <h2>Prescriptions</h2>
-<a asp-action="Create" class="btn btn-primary mb-3">+ Add Prescription</a>
-
+<form method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="search" value="@ViewData["Search"]" class="form-control" placeholder="Search by name..." style="max-width: 300px;" />
+    <button type="submit" class="btn btn-secondary">Search</button>
+@if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+{
+        <a asp-action="Create" class="btn btn-primary ms-auto">+ Add Prescription</a>
+}
+</form>
 <table class="table table-striped">
     <thead><tr><th>Patient</th><th>Doctor</th><th>Medicines</th><th>Issued</th><th></th></tr></thead>
     <tbody>
@@ -13,8 +19,31 @@
                 <td>@p.Appointment?.Doctor?.FullName</td>
                 <td>@p.Medicines</td>
                 <td>@p.IssuedOn.ToShortDateString()</td>
-                <td><a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Delete</a></td>
+                <td>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    }
+                </td>
             </tr>
         }
     </tbody>
 </table>
+
+@{
+    int currentPage = (int)ViewData["CurrentPage"]!;
+    int totalPages = (int)ViewData["TotalPages"]!;
+}
+@if (totalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="?page=@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

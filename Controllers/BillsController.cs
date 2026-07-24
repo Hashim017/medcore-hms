@@ -26,14 +26,29 @@ namespace MedCore.Controllers
                 "Id", "Label", selectedId);
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
-            var bills = await _context.Bills
+            int pageSize = 10;
+
+            var query = _context.Bills
                 .Include(b => b.Appointment).ThenInclude(a => a!.Patient)
-                .ToListAsync();
+                .OrderByDescending(b => b.GeneratedOn)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(b => b.Appointment!.Patient!.FullName.Contains(search));
+
+            int totalCount = await query.CountAsync();
+            var bills = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            ViewData["Search"] = search;
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return View(bills);
         }
 
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create()
         {
             await LoadAppointments();
@@ -41,6 +56,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create(BillViewModel model)
         {
             if (!ModelState.IsValid)
@@ -60,6 +76,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> MarkPaid(int id)
         {
             var bill = await _context.Bills.FindAsync(id);
@@ -72,6 +89,7 @@ namespace MedCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var bill = await _context.Bills
@@ -82,6 +100,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var bill = await _context.Bills.FindAsync(id);

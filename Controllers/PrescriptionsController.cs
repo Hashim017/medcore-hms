@@ -27,15 +27,30 @@ namespace MedCore.Controllers
                 "Id", "Label", selectedId);
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
-            var prescriptions = await _context.Prescriptions
+            int pageSize = 10;
+
+            var query = _context.Prescriptions
                 .Include(p => p.Appointment).ThenInclude(a => a!.Patient)
                 .Include(p => p.Appointment).ThenInclude(a => a!.Doctor)
-                .ToListAsync();
+                .OrderByDescending(p => p.IssuedOn)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(p => p.Appointment!.Patient!.FullName.Contains(search));
+
+            int totalCount = await query.CountAsync();
+            var prescriptions = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            ViewData["Search"] = search;
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return View(prescriptions);
         }
 
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> Create()
         {
             await LoadAppointments();
@@ -43,6 +58,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> Create(PrescriptionViewModel model)
         {
             if (!ModelState.IsValid)
@@ -66,6 +82,7 @@ namespace MedCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var prescription = await _context.Prescriptions
@@ -75,6 +92,7 @@ namespace MedCore.Controllers
             return View(prescription);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

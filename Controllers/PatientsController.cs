@@ -18,15 +18,25 @@ namespace MedCore.Controllers
         }
 
         // GET: /Patients
-        public async Task<IActionResult> Index(string? search)
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
+            int pageSize = 10;
             var query = _context.Patients.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p => p.FullName.Contains(search));
 
-            var patients = await query.OrderByDescending(p => p.RegisteredOn).ToListAsync();
+            int totalCount = await query.CountAsync();
+            var patients = await query
+                .OrderByDescending(p => p.RegisteredOn)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
             ViewData["Search"] = search;
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return View(patients);
         }
 
@@ -39,10 +49,12 @@ namespace MedCore.Controllers
         }
 
         // GET: /Patients/Create
+        [Authorize(Roles = "Admin,Receptionist")]
         public IActionResult Create() => View();
 
         // POST: /Patients/Create
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create(PatientViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
@@ -63,6 +75,7 @@ namespace MedCore.Controllers
         }
 
         // GET: /Patients/Edit/5
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id)
         {
             var patient = await _context.Patients.FindAsync(id);
@@ -83,6 +96,7 @@ namespace MedCore.Controllers
 
         // POST: /Patients/Edit/5
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id, PatientViewModel model)
         {
             if (id != model.Id) return BadRequest();
@@ -103,6 +117,7 @@ namespace MedCore.Controllers
         }
 
         // GET: /Patients/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var patient = await _context.Patients.FindAsync(id);
@@ -112,13 +127,22 @@ namespace MedCore.Controllers
 
         // POST: /Patients/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var patient = await _context.Patients.FindAsync(id);
             if (patient != null)
             {
-                _context.Patients.Remove(patient);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Patients.Remove(patient);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["Error"] = "Cannot delete this patient — they have existing appointments linked to their record.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return RedirectToAction(nameof(Index));
         }

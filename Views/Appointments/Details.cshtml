@@ -1,0 +1,31 @@
+﻿@model MedCore.Models.Appointment
+
+<h2>Appointment Details</h2>
+<dl class="row">
+    <dt class="col-sm-2">Patient</dt>
+    <dd class="col-sm-10">@Model.Patient?.FullName</dd>
+    <dt class="col-sm-2">Doctor</dt>
+    <dd class="col-sm-10">@Model.Doctor?.FullName</dd>
+    <dt class="col-sm-2">Date</dt>
+    <dd class="col-sm-10">@Model.AppointmentDate.ToString("g")</dd>
+    <dt class="col-sm-2">Status</dt>
+    <dd class="col-sm-10">@Model.Status</dd>
+    <dt class="col-sm-2">Notes</dt>
+    <dd class="col-sm-10">@Model.Notes</dd>
+</dl>
+
+@if (Model.Prescription != null)
+{
+    <h4>Prescription</h4>
+    <p><strong>Medicines:</strong> @Model.Prescription.Medicines</p>
+    <p><strong>Instructions:</strong> @Model.Prescription.Instructions</p>
+}
+
+@if (Model.Bill != null)
+{
+    <h4>Bill</h4>
+    <p><strong>Amount:</strong> @Model.Bill.Amount.ToString("C")</p>
+    <p><strong>Status:</strong> @Model.Bill.Status</p>
+}
+
+<a asp-action="Index" class="btn btn-secondary">Back</a>

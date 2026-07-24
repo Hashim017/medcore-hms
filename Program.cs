@@ -36,8 +36,9 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
 await RoleSeeder.SeedRolesAsync(app);
+await RoleSeeder.SeedDemoDataAsync(app);
 
 app.Run();

@@ -1,27 +1,46 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MedCore.Data;
+using MedCore.Models;
+using MedCore.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MedCore.Data;
-using MedCore.Models;
-using MedCore.ViewModels;
 
 namespace MedCore.Controllers
 {
     [Authorize]
     public class DoctorsController : Controller
     {
+
         private readonly ApplicationDbContext _context;
-        public DoctorsController(ApplicationDbContext context) => _context = context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        public DoctorsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
 
         private async Task LoadDepartments(int? selectedId = null)
         {
             ViewBag.Departments = new SelectList(await _context.Departments.ToListAsync(), "Id", "Name", selectedId);
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
-            var doctors = await _context.Doctors.Include(d => d.Department).ToListAsync();
+            int pageSize = 10;
+            var query = _context.Doctors.Include(d => d.Department).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(d => d.FullName.Contains(search) || d.Specialization.Contains(search));
+
+            int totalCount = await query.CountAsync();
+            var doctors = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            ViewData["Search"] = search;
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return View(doctors);
         }
 
@@ -32,6 +51,7 @@ namespace MedCore.Controllers
             return View(doctor);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             await LoadDepartments();
@@ -39,6 +59,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(DoctorViewModel model)
         {
             if (!ModelState.IsValid)
@@ -59,6 +80,7 @@ namespace MedCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var doctor = await _context.Doctors.FindAsync(id);
@@ -76,6 +98,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, DoctorViewModel model)
         {
             if (id != model.Id) return BadRequest();
@@ -97,6 +120,7 @@ namespace MedCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> Delete(int id)
         {
             var doctor = await _context.Doctors.Include(d => d.Department).FirstOrDefaultAsync(d => d.Id == id);
@@ -105,13 +129,22 @@ namespace MedCore.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var doctor = await _context.Doctors.FindAsync(id);
             if (doctor != null)
             {
-                _context.Doctors.Remove(doctor);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.Doctors.Remove(doctor);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["Error"] = "Cannot delete this doctor — they have existing appointments linked to their record.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return RedirectToAction(nameof(Index));
         }

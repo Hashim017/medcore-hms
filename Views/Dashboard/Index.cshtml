@@ -1,0 +1,54 @@
+﻿@model MedCore.ViewModels.DashboardViewModel
+
+<h2>Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h6>Total Patients</h6>
+                <h3>@Model.TotalPatients</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h6>Total Doctors</h6>
+                <h3>@Model.TotalDoctors</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h6>Appointments Today</h6>
+                <h3>@Model.AppointmentsToday</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h6>Unpaid Bills</h6>
+                <h3>@Model.UnpaidBillsTotal.ToString("C")</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Recent Appointments</h4>
+<table class="table table-striped">
+    <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var a in Model.RecentAppointments)
+        {
+            <tr>
+                <td>@a.Patient?.FullName</td>
+                <td>@a.Doctor?.FullName</td>
+                <td>@a.AppointmentDate.ToString("g")</td>
+                <td>@a.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
