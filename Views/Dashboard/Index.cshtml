@@ -1,40 +1,56 @@
 ﻿@model MedCore.ViewModels.DashboardViewModel
 
-<h2>Dashboard</h2>
+<h2>Welcome, @(User.IsInRole("Doctor") ? "Dr. " : "")@ViewBag.DisplayName</h2>
+<p class="text-muted">Role: @ViewBag.UserRole</p>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h6>Total Patients</h6>
-                <h3>@Model.TotalPatients</h3>
-            </div>
+<div class="row mb-4 g-3">
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="col-md-3">
+            <div class="mc-card"><h6>Total Patients</h6><h3>@Model.TotalPatients</h3></div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h6>Total Doctors</h6>
-                <h3>@Model.TotalDoctors</h3>
-            </div>
+        <div class="col-md-3">
+            <div class="mc-card"><h6>Total Doctors</h6><h3>@Model.TotalDoctors</h3></div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
-            <div class="card-body">
-                <h6>Appointments Today</h6>
-                <h3>@Model.AppointmentsToday</h3>
-            </div>
+        <div class="col-md-3">
+            <div class="mc-card warn"><h6>Pending Appointments</h6><h3>@Model.PendingAppointments</h3></div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h6>Unpaid Bills</h6>
-                <h3>@Model.UnpaidBillsTotal.ToString("C")</h3>
-            </div>
+        <div class="col-md-3">
+            <div class="mc-card danger"><h6>Unpaid Bills</h6><h3>@Model.UnpaidBillsTotal.ToString("C", new System.Globalization.CultureInfo("en-US"))</h3></div>
         </div>
-    </div>
+    }
+
+    @if (User.IsInRole("Doctor"))
+    {
+        <div class="col-md-3">
+            <div class="mc-card"><h6>Pending Appointments</h6><h3>@Model.PendingAppointments</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card"><h6>My Patients</h6><h3>@Model.MyPatientsCount</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card"><h6>My Prescriptions</h6><h3>@Model.MyPendingPrescriptions</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card warn"><h6>My Unpaid Bills</h6><h3>@Model.UnpaidBillsTotal.ToString("C", new System.Globalization.CultureInfo("en-US")))</h3></div>
+        </div>
+    }
+
+    @if (User.IsInRole("Receptionist"))
+    {
+        <div class="col-md-3">
+            <div class="mc-card"><h6>Pending Appointments</h6><h3>@Model.PendingAppointments</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card"><h6>New Patients (7d)</h6><h3>@Model.NewPatientsThisWeek</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card warn"><h6>Pending Lab Orders</h6><h3>@Model.PendingLabOrders</h3></div>
+        </div>
+        <div class="col-md-3">
+            <div class="mc-card danger"><h6>Unpaid Bills</h6><h3>@Model.UnpaidBillsCount</h3></div>
+        </div>
+    }
 </div>
 
 <h4>Recent Appointments</h4>
@@ -46,7 +62,7 @@
             <tr>
                 <td>@a.Patient?.FullName</td>
                 <td>@a.Doctor?.FullName</td>
-                <td>@a.AppointmentDate.ToString("g")</td>
+                <td class="mono">@a.AppointmentDate.ToString("g")</td>
                 <td>@a.Status</td>
             </tr>
         }

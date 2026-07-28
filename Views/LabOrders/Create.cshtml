@@ -1,0 +1,25 @@
+﻿@model MedCore.ViewModels.LabOrderViewModel
+
+<h2>Order Lab Test</h2>
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3">
+        <label>Patient</label>
+        <select asp-for="PatientId" asp-items="ViewBag.Patients" class="form-control"><option value="">-- Select --</option></select>
+    </div>
+    @if (User.IsInRole("Doctor"))
+    {
+        <input type="hidden" asp-for="DoctorId" />
+    }
+    else
+    {
+        <div class="mb-3">
+            <label>Doctor</label>
+            <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-control"><option value="">-- Select --</option></select>
+        </div>
+    }
+    <div class="mb-3"><label>Test Code</label><input asp-for="TestCode" class="form-control" placeholder="e.g. CBC" /></div>
+    <div class="mb-3"><label>Test Name</label><input asp-for="TestName" class="form-control" placeholder="e.g. Complete Blood Count" /></div>
+    <button type="submit" class="btn btn-primary">Send Order</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

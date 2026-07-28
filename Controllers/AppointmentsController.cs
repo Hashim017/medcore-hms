@@ -40,7 +40,7 @@ namespace MedCore.Controllers
             if (User.IsInRole("Doctor"))
             {
                 var userId = _userManager.GetUserId(User);
-                query = query.Where(a => a.Doctor!.ApplicationUserId == userId);
+                query = query.Where(a => a.Doctor!.UserId == userId);
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -97,7 +97,7 @@ namespace MedCore.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> Edit(int id)
         {
             var appt = await _context.Appointments.FindAsync(id);
@@ -116,7 +116,7 @@ namespace MedCore.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> Edit(int id, AppointmentViewModel model)
         {
             if (id != model.Id) return BadRequest();
@@ -177,7 +177,7 @@ namespace MedCore.Controllers
             if (User.IsInRole("Doctor"))
             {
                 var userId = _userManager.GetUserId(User);
-                if (appt.Doctor?.ApplicationUserId != userId) return Forbid();
+                if (appt.Doctor?.UserId != userId) return Forbid();
             }
 
             return View(appt);

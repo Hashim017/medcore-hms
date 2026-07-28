@@ -1,4 +1,5 @@
 ﻿using MedCore.Data;
+using MedCore.Helpers;
 using MedCore.Models;
 using MedCore.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -47,14 +48,14 @@ namespace MedCore.Controllers
             {
                 UserName = model.Email,
                 Email = model.Email,
-                FullName = model.FullName
+                FullName = StringHelpers.ToTitleCase(model.FullName)
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
             {
-                foreach (var error in result.Errors)
+                foreach (var error in result.Errors)   
                     ModelState.AddModelError(string.Empty, error.Description);
                 ViewBag.Departments = new SelectList(await _context.Departments.ToListAsync(), "Id", "Name");
                 return View(model);
@@ -67,11 +68,11 @@ namespace MedCore.Controllers
             {
                 var doctor = new Doctor
                 {
-                    FullName = model.FullName,
+                    FullName = StringHelpers.ToTitleCase(model.FullName),
                     Specialization = model.Specialization!,
                     PhoneNumber = model.PhoneNumber,
                     DepartmentId = model.DepartmentId!.Value,
-                    ApplicationUserId = user.Id
+                    UserId = user.Id
                 };
                 _context.Doctors.Add(doctor);
                 await _context.SaveChangesAsync();

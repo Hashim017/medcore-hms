@@ -10,29 +10,45 @@
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
-        <nav class="bg-dark text-white p-3" style="width: 220px; min-height: 100vh;">
-            <h4 class="mb-4">MedCore</h4>
+        <nav class="mc-sidebar p-3 d-flex flex-column">
+            <div class="brand mb-4">MedCore</div>
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Patients" asp-action="Index">Patients</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Doctors" asp-action="Index">Doctors</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Appointments" asp-action="Index">Appointments</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Prescriptions" asp-action="Index">Prescriptions</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Bills" asp-action="Index">Bills</a></li>
-                    <li class="nav-item mt-4">
-                        <form asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="btn btn-outline-light btn-sm w-100">Logout</button>
-                        </form>
-                    </li>
+                <ul class="nav flex-column flex-grow-1">
+                    <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Patients" asp-action="Index">Patients</a></li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Receptionist"))
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Doctors" asp-action="Index">Doctors</a></li>
+                    }
+                    <li class="nav-item"><a class="nav-link" asp-controller="Appointments" asp-action="Index">Appointments</a></li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Prescriptions" asp-action="Index">Prescriptions</a></li>
+                    }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Receptionist"))
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Bills" asp-action="Index">Bills</a></li>
+                    }
+                    <li class="nav-item"><a class="nav-link" asp-controller="LabOrders" asp-action="Index">Lab Orders</a></li>
                 </ul>
+
+                <div class="border-top border-light border-opacity-25 pt-3 mt-3">
+                    <div class="mb-2">
+                        <span class="mc-role-chip mc-role-@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Doctor") ? "Doctor" : "Receptionist")">
+                            @(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Doctor") ? "Doctor" : "Receptionist")
+                        </span>
+                    </div>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="btn btn-outline-light btn-sm w-100">Logout</button>
+                    </form>
+                </div>
             }
             else
             {
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Account" asp-action="Login">Login</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Account" asp-action="Register">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register">Register</a></li>
                 </ul>
             }
         </nav>

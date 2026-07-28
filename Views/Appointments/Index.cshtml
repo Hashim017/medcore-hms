@@ -23,7 +23,7 @@
                 <td>@a.Status</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@a.Id" class="btn btn-sm btn-outline-info">View</a>
-                    @if (User.IsInRole("Admin") || User.IsInRole("Receptionist"))
+                    @if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
                     {
                         <a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
                     }

@@ -1,22 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --bg: #F5F8F9;
+    --surface: #FFFFFF;
+    --primary: #0E3B3E;
+    --primary-light: #16524F;
+    --accent: #1E8A78;
+    --warn: #C77A2D;
+    --danger: #B54646;
+    --text: #17262A;
+    --muted: #64777C;
+    --border: #E1E8EA;
+}
+
 html {
-  font-size: 14px;
+    font-size: 15px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 60px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Sidebar */
+.mc-sidebar {
+    background: var(--primary);
+    width: 240px;
+    min-height: 100vh;
+    color: #E6EFEF;
+}
+
+    .mc-sidebar .brand {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1.4rem;
+        letter-spacing: -0.02em;
+        color: #fff;
+    }
+
+    .mc-sidebar .nav-link {
+        color: #C7D8D6;
+        border-radius: 6px;
+        padding: 0.55rem 0.8rem;
+        margin-bottom: 2px;
+        font-size: 0.95rem;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+        .mc-sidebar .nav-link:hover,
+        .mc-sidebar .nav-link.active {
+            background: var(--primary-light);
+            color: #fff;
+        }
+
+.mc-role-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.mc-role-Admin {
+    background: #1E8A78;
+    color: #fff;
+}
+
+.mc-role-Doctor {
+    background: #C77A2D;
+    color: #fff;
+}
+
+.mc-role-Receptionist {
+    background: #5A6B6E;
+    color: #fff;
+}
+
+/* Cards */
+.mc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: 0 1px 3px rgba(14, 59, 62, 0.06);
+}
+
+    .mc-card h6 {
+        font-family: 'Inter', sans-serif;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.4rem;
+    }
+
+    .mc-card h3 {
+        font-size: 1.9rem;
+        margin: 0;
+        color: var(--text);
+    }
+
+    .mc-card.warn {
+        border-left-color: var(--warn);
+    }
+
+    .mc-card.danger {
+        border-left-color: var(--danger);
+    }
+
+/* Tables */
+.table {
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .table thead th {
+        background: #EEF3F3;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border: none;
+    }
+
+    .table td {
+        font-size: 0.92rem;
+        vertical-align: middle;
+    }
+
+        .table td.mono, .mc-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+/* Buttons */
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+    .btn-primary:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+.btn-outline-secondary, .btn-outline-info, .btn-outline-danger, .btn-outline-success {
+    font-size: 0.82rem;
+}
+
+/* HL7 / code blocks */
+pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: #101F22 !important;
+    color: #B8E0D6;
+    border: none !important;
+    border-radius: 8px;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--accent);
+}
+
+html {
+    position: relative;
+    min-height: 100%;
 }

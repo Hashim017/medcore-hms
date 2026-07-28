@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedCore.Data;
@@ -7,14 +8,16 @@ using MedCore.ViewModels;
 
 namespace MedCore.Controllers
 {
-    [Authorize] // must be logged in to access any action here
+    [Authorize]
     public class PatientsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager; // ADDED
 
-        public PatientsController(ApplicationDbContext context)
+        public PatientsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) // ADDED param
         {
             _context = context;
+            _userManager = userManager; // ADDED
         }
 
         // GET: /Patients
@@ -22,6 +25,21 @@ namespace MedCore.Controllers
         {
             int pageSize = 10;
             var query = _context.Patients.AsQueryable();
+
+            // ADDED: Doctor sees only patients they've had appointments with
+            if (User.IsInRole("Doctor"))
+            {
+                var userId = _userManager.GetUserId(User);
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
+                if (doctor != null)
+                {
+                    var myPatientIds = _context.Appointments
+                        .Where(a => a.DoctorId == doctor.Id)
+                        .Select(a => a.PatientId)
+                        .Distinct();
+                    query = query.Where(p => myPatientIds.Contains(p.Id));
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p => p.FullName.Contains(search));
@@ -146,5 +164,6 @@ namespace MedCore.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
     }
 }

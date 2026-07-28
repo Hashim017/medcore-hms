@@ -17,6 +17,7 @@ namespace MedCore.Data
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<Prescription> Prescriptions => Set<Prescription>();
         public DbSet<Bill> Bills => Set<Bill>();
+        public DbSet<LabOrder> LabOrders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -54,10 +55,6 @@ namespace MedCore.Data
                 .HasForeignKey(d => d.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Doctor>()
-                .HasOne(d => d.ApplicationUser)
-                .WithOne(u => u.Doctor)
-                .HasForeignKey<ApplicationUser>(u => u.DoctorId);
         }
     }
 }

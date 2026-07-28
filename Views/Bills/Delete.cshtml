@@ -1,7 +1,7 @@
 ﻿@model MedCore.Models.Bill
 
 <h2>Delete Bill</h2>
-<p>Delete bill for <strong>@Model.Appointment?.Patient?.FullName</strong> (@Model.Amount.ToString("C"))?</p>
+<p>Delete bill for <strong>@Model.Appointment?.Patient?.FullName</strong> (@Model.Amount.ToString("C", new System.Globalization.CultureInfo("en-US")))?</p>
 <form asp-action="Delete" method="post">
     <input type="hidden" asp-for="Id" />
     <button type="submit" class="btn btn-danger">Delete</button>

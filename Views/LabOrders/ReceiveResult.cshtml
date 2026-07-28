@@ -1,0 +1,15 @@
+﻿@model MedCore.ViewModels.ReceiveResultViewModel
+
+<h2>Receive Lab Result</h2>
+<p class="text-muted">Paste the incoming HL7 ORU result message below (simulating what the lab sends back).</p>
+
+<form asp-action="ReceiveResult" method="post">
+    <input type="hidden" asp-for="LabOrderId" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3">
+        <textarea asp-for="Hl7ResultMessage" class="form-control" rows="8" placeholder="MSH|^~\&|LAB|LabSystem|MedCore|Hospital|...||ORU^R01|...
+OBX|1|TX|CBC^Complete Blood Count||Normal||||||F"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Parse & Save Result</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

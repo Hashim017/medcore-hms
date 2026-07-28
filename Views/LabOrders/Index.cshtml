@@ -1,0 +1,48 @@
+﻿@model List<MedCore.Models.LabOrder>
+
+<h2>Lab Orders</h2>
+
+<form method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="search" value="@ViewData["Search"]" class="form-control" placeholder="Search by patient or doctor name..." style="max-width: 300px;" />
+    <button type="submit" class="btn btn-secondary">Search</button>
+    @if (User.IsInRole("Doctor"))
+    {
+        <a asp-action="Create" class="btn btn-primary ms-auto">+ Order Test</a>
+    }
+</form>
+
+<table class="table table-striped">
+    <thead><tr><th>Patient</th><th>Doctor</th><th>Test</th><th>Status</th><th>Ordered</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.Patient?.FullName</td>
+                <td>@o.Doctor?.FullName</td>
+                <td>@o.TestName</td>
+                <td>
+                    @if (o.Status == MedCore.Models.LabOrderStatus.Ordered)
+                    {
+                        <span class="badge bg-warning">Ordered</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Result Received</span>
+                    }
+                </td>
+                <td>@o.OrderedOn.ToString("g")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-info">View</a>
+                    @if (User.IsInRole("Doctor") && o.Status == MedCore.Models.LabOrderStatus.Ordered)
+                    {
+                        <a asp-action="ReceiveResult" asp-route-id="@o.Id" class="btn btn-sm btn-outline-success">Receive Result</a>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@o.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

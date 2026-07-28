@@ -4,6 +4,7 @@ using MedCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedCore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727175746_AddLabOrders")]
+    partial class AddLabOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,6 +36,9 @@ namespace MedCore.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -79,6 +85,10 @@ namespace MedCore.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DoctorId")
+                        .IsUnique()
+                        .HasFilter("[DoctorId] IS NOT NULL");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -180,6 +190,9 @@ namespace MedCore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
 
@@ -197,13 +210,16 @@ namespace MedCore.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Doctors");
                 });
@@ -457,6 +473,15 @@ namespace MedCore.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MedCore.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("MedCore.Models.Doctor", "Doctor")
+                        .WithOne("ApplicationUser")
+                        .HasForeignKey("MedCore.Models.ApplicationUser", "DoctorId");
+
+                    b.Navigation("Doctor");
+                });
+
             modelBuilder.Entity("MedCore.Models.Appointment", b =>
                 {
                     b.HasOne("MedCore.Models.Doctor", "Doctor")
@@ -497,7 +522,7 @@ namespace MedCore.Migrations
 
                     b.HasOne("MedCore.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Department");
 
@@ -599,6 +624,8 @@ namespace MedCore.Migrations
 
             modelBuilder.Entity("MedCore.Models.Doctor", b =>
                 {
+                    b.Navigation("ApplicationUser");
+
                     b.Navigation("Appointments");
                 });
 

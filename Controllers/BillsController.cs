@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,13 @@ namespace MedCore.Controllers
     public class BillsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public BillsController(ApplicationDbContext context) => _context = context;
+        private readonly UserManager<ApplicationUser> _userManager; // ADDED
+
+        public BillsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) // ADDED param
+        {
+            _context = context;
+            _userManager = userManager; // ADDED
+        }
 
         private async Task LoadAppointments(int? selectedId = null)
         {
@@ -20,7 +27,6 @@ namespace MedCore.Controllers
                 .Include(a => a.Patient).Include(a => a.Doctor)
                 .Where(a => a.Bill == null)
                 .ToListAsync();
-
             ViewBag.Appointments = new SelectList(
                 appointments.Select(a => new { a.Id, Label = $"{a.Patient!.FullName} - {a.Doctor!.FullName} ({a.AppointmentDate:g})" }),
                 "Id", "Label", selectedId);
@@ -29,22 +35,30 @@ namespace MedCore.Controllers
         public async Task<IActionResult> Index(string? search, int page = 1)
         {
             int pageSize = 10;
-
             var query = _context.Bills
                 .Include(b => b.Appointment).ThenInclude(a => a!.Patient)
+                .Include(b => b.Appointment).ThenInclude(a => a!.Doctor) // ADDED so DoctorId filter works
                 .OrderByDescending(b => b.GeneratedOn)
                 .AsQueryable();
+
+            // ADDED: Doctor sees only their own patients' unpaid bills
+            if (User.IsInRole("Doctor"))
+            {
+                var userId = _userManager.GetUserId(User);
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
+                if (doctor != null)
+                    query = query.Where(b => b.Appointment!.DoctorId == doctor.Id
+                        && b.Status == PaymentStatus.Unpaid);
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(b => b.Appointment!.Patient!.FullName.Contains(search));
 
             int totalCount = await query.CountAsync();
             var bills = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-
             ViewData["Search"] = search;
             ViewData["CurrentPage"] = page;
             ViewData["TotalPages"] = (int)Math.Ceiling(totalCount / (double)pageSize);
-
             return View(bills);
         }
 

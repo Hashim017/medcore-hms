@@ -16,7 +16,7 @@
         {
             <tr>
                 <td>@b.Appointment?.Patient?.FullName</td>
-                <td>@b.Amount.ToString("C")</td>
+                <td>@b.Amount.ToString("C", new System.Globalization.CultureInfo("en-US"))</td>
                 <td>@b.Status</td>
                 <td>@b.GeneratedOn.ToShortDateString()</td>
                 <td>
