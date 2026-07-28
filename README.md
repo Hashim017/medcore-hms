@@ -1,45 +1,73 @@
-# MedCore — Clinic Management System
+# MedCore â€” Clinic Management System
 
-A multi-role Clinic Management System built with ASP.NET Core MVC, demonstrating enterprise software patterns relevant to healthcare domain applications.
+A multi-role Clinic Management System built with ASP.NET Core MVC, demonstrating enterprise software patterns relevant to healthcare domain applications â€” including HL7 messaging, role-scoped data access, and clinical workflow logic.
 
 ## Tech Stack
+
 - ASP.NET Core MVC (.NET 8)
 - Entity Framework Core + SQL Server
 - ASP.NET Core Identity (role-based authentication: Admin, Doctor, Receptionist)
-- Bootstrap 5
+- Bootstrap 5 with a custom clinical design system (Space Grotesk / Inter / JetBrains Mono)
 
 ## Features
-- **Authentication & Authorization** — ASP.NET Identity with role-based access control enforced at the controller level (not just hidden UI)
-- **Patient Management** — registration, search, pagination
-- **Doctor Management** — department assignment, admin-controlled account linking
-- **Appointment Scheduling** — conflict detection prevents double-booking a doctor at the same time slot
-- **Prescriptions & Billing** — tied to completed appointments via one-to-one relationships
-- **Role-restricted workflows**:
-  - Admin — full access across all modules
-  - Receptionist — manages patients, books appointments, generates/collects bills
-  - Doctor — views only their own linked appointments, writes prescriptions, cannot manage patients/doctors
-- **Admin-controlled identity linking** — Doctor login accounts are linked to Doctor profiles by an Admin (not self-selected at registration), preventing identity spoofing
-- Search and pagination across all major data tables
+
+### Authentication & Authorization
+- ASP.NET Identity with role-based access control enforced at the controller level (not just hidden UI)
+- Self-service doctor registration with auto-linked profiles â€” a new doctor account is automatically tied to its `Doctor` record on signup, no manual admin linking step required
+
+### Core Modules
+- **Patient Management** â€” registration, search, pagination
+- **Doctor Management** â€” department assignment, specialization, linked login account
+- **Appointment Scheduling** â€” conflict detection prevents double-booking a doctor at the same time slot
+- **Prescriptions** â€” tied to completed appointments via a one-to-one relationship
+- **Billing** â€” tied to completed appointments, unpaid/paid status tracking, USD-formatted regardless of server locale
+- **Lab Orders** â€” order tests, generate and parse simulated HL7 order/result messages, track order status (Ordered / Result Received)
+
+### Role-Based Dashboards
+Each role sees stats relevant to their day-to-day work instead of one generic view:
+- **Admin** â€” total patients, total doctors, pending appointments (all doctors), unpaid bills total
+- **Doctor** â€” own patient count, own prescriptions written, own pending appointments, own unpaid bills
+- **Receptionist** â€” pending appointments, new patients this week, pending lab orders, unpaid bills count
+
+### Role-Scoped Data Access
+Beyond page-level authorization, data itself is scoped per doctor across the app:
+- Doctors only see their own patients, appointments, prescriptions, bills, and lab orders â€” never another doctor's data
+- Dropdowns (e.g. ordering a lab test) only list a doctor's own patients, with the ordering doctor auto-selected and locked (not user-editable) to prevent submitting orders under another doctor's name
+
+### Data Integrity & UX
 - Referential integrity enforced at the database level (restricted deletes on records with dependent data), with friendly error handling instead of raw exceptions
+- Search and pagination across all major data tables
+- Auto-formatted names on save (consistent capitalization regardless of input casing)
 
 ## Architecture
+
 - **ViewModels** separate form input from EF entities (validation lives here, not on domain models)
-- **Explicit relationship configuration** in `ApplicationDbContext` for ambiguous one-to-one relationships (Appointment?Prescription, Appointment?Bill)
-- **DeleteBehavior.Restrict** on Doctor/Patient foreign keys — protects appointment history from silent data loss
-- **Role seeding + demo data seeding** on startup for consistent environment setup
+- **Explicit relationship configuration** in `ApplicationDbContext` for ambiguous one-to-one relationships (Appointmentâ†”Prescription, Appointmentâ†”Bill, Doctorâ†”ApplicationUser)
+- **DeleteBehavior.Restrict** on Doctor/Patient foreign keys â€” protects appointment history from silent data loss
+- **HL7 message helper** (`Hl7Helper`) generates and parses simplified HL7-formatted order and result messages for the Lab Orders module
+- **Role seeding + demo data seeding** on startup â€” creates all three roles, sample departments, patients, and working login accounts (admin, doctors, receptionists) with fully linked, realistic relational data for immediate exploration
 
 ## Setup
+
 1. Clone the repo
 2. Update the connection string in `appsettings.json` if your SQL Server instance differs
 3. Run migrations:
-
-dotnet ef database update
-
+   ```
+   dotnet ef database update
+   ```
 4. Run the app:
+   ```
+   dotnet run
+   ```
+5. Log in with seeded demo accounts, or register your own:
+   - Admin â€” `admin@medcore.com` / `Staff@123`
+   - Doctor â€” `dr.reed@medcore.com` / `Doctor@123`
+   - Receptionist â€” `reception1@medcore.com` / `Staff@123`
 
-dotnet run
+## Screenshots
 
-5. Register an account, or use the seeded demo data (25 patients, 12 doctors, 40 appointments) to explore immediately
+<!-- Add screenshots here: Dashboard (Admin/Doctor/Receptionist views), Patients list, Appointment scheduling, Lab Order with HL7 message, Prescriptions, Bills -->
 
 ## Why these design choices
-This project was built to demonstrate transferable software engineering fundamentals — clean architecture, proper authorization boundaries, and real business logic (conflict detection, referential integrity) — using an enterprise stack (C#, ASP.NET Core, SQL Server) relevant to healthcare software teams.
+
+This project was built to demonstrate transferable software engineering fundamentals â€” clean architecture, proper authorization boundaries, and real business logic (conflict detection, referential integrity, role-scoped data access) â€” using an enterprise stack (C#, ASP.NET Core, SQL Server) relevant to healthcare software teams. The Lab Orders module and HL7 message handling specifically demonstrate familiarity with healthcare interoperability standards used in real EHR/clinic systems.
