@@ -22,6 +22,7 @@ A multi-role Clinic Management System built with ASP.NET Core MVC, demonstrating
 - **Prescriptions** — tied to completed appointments via a one-to-one relationship
 - **Billing** — tied to completed appointments, unpaid/paid status tracking, USD-formatted regardless of server locale
 - **Lab Orders** — order tests, generate and parse simulated HL7 order/result messages, track order status (Ordered / Result Received)
+- **FHIR-Style API** — read-only REST endpoints (`/fhir/Patient/{id}`, `/fhir/Appointment/{id}`) that expose internal data shaped as FHIR `Patient` and `Appointment` resources, for interoperability with external healthcare systems
 
 ### Role-Based Dashboards
 Each role sees stats relevant to their day-to-day work instead of one generic view:
@@ -66,8 +67,30 @@ Beyond page-level authorization, data itself is scoped per doctor across the app
 
 ## Screenshots
 
-<!-- Add screenshots here: Dashboard (Admin/Doctor/Receptionist views), Patients list, Appointment scheduling, Lab Order with HL7 message, Prescriptions, Bills -->
+### Admin Dashboard
+![Admin Dashboard](Screenshots/admin-dashboard.png)
+
+### Doctor Dashboard
+![Doctor Dashboard](Screenshots/doctor-dashboard.png)
+
+### Receptionist Dashboard
+![Receptionist Dashboard](Screenshots/receptionist-dashboard.png)
+
+### Appointments List
+![Appointments List](Screenshots/appointments-page.png)
+
+### Bills List
+![Bills List](Screenshots/bills-page.png)
+
+### Lab Orders List
+![Lab Orders List](Screenshots/lab-orders-page.png)
+
+### Lab Order with HL7 Message
+![Lab Order with HL7 Message](Screenshots/lab-order-with-received-obx-result.png)
+
+### Prescriptions List
+![Prescriptions List](Screenshots/prescriptions-page.png)
 
 ## Why these design choices
 
-This project was built to demonstrate transferable software engineering fundamentals — clean architecture, proper authorization boundaries, and real business logic (conflict detection, referential integrity, role-scoped data access) — using an enterprise stack (C#, ASP.NET Core, SQL Server) relevant to healthcare software teams. The Lab Orders module and HL7 message handling specifically demonstrate familiarity with healthcare interoperability standards used in real EHR/clinic systems.
+This project was built to demonstrate transferable software engineering fundamentals — clean architecture, proper authorization boundaries, and real business logic (conflict detection, referential integrity, role-scoped data access) — using an enterprise stack (C#, ASP.NET Core, SQL Server) relevant to healthcare software teams. The Lab Orders module (HL7 messaging) and the FHIR-shaped API layer specifically demonstrate familiarity with healthcare interoperability standards used in real EHR/clinic systems.
